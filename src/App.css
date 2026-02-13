@@ -182,7 +182,7 @@
 .qr-paper {
   border-radius: clamp(20px, 5vw, 42px);
   background: #ffffff;
-  padding: clamp(0.75rem, 1.7vw, 1rem);
+  padding: clamp(1rem, 2.2vw, 1.35rem);
   display: grid;
   place-items: center;
   overflow: hidden;

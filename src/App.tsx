@@ -135,7 +135,7 @@ function App() {
                   value={qrValue}
                   size={520}
                   level="M"
-                  includeMargin={false}
+                  marginSize={1}
                   bgColor="transparent"
                   className="qr-canvas"
                 />
