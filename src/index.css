@@ -1,0 +1,23 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-width: 320px;
+}
+
+body {
+  font-family: 'Avenir Next', 'Segoe UI', 'Helvetica Neue', sans-serif;
+  color: #18221a;
+  background:
+    radial-gradient(circle at 8% 14%, rgba(189, 211, 186, 0.42), transparent 35%),
+    radial-gradient(circle at 92% 10%, rgba(165, 192, 161, 0.34), transparent 40%),
+    linear-gradient(175deg, #e9efe7 0%, #dde6da 100%);
+}
+
+input,
+button {
+  font: inherit;
+}
