@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState, type CSSProperties } from 'react'
+import html2canvas from 'html2canvas'
 import { QRCodeCanvas } from 'qrcode.react'
 import './App.css'
 
@@ -17,11 +18,50 @@ function isValidHttpUrl(value: string) {
 function App() {
   const [urlInput, setUrlInput] = useState(DEFAULT_URL)
   const [labelInput, setLabelInput] = useState(DEFAULT_LABEL)
+  const [borderColor, setBorderColor] = useState('#8ea989')
+  const [isExporting, setIsExporting] = useState(false)
+  const qrExportRef = useRef<HTMLDivElement>(null)
 
   const trimmedUrl = urlInput.trim()
   const qrValue = trimmedUrl.length > 0 ? trimmedUrl : DEFAULT_URL
   const label = labelInput.trim().length > 0 ? labelInput.trim() : DEFAULT_LABEL
   const isValidUrl = useMemo(() => isValidHttpUrl(trimmedUrl), [trimmedUrl])
+  const previewStyle = useMemo(
+    () =>
+      ({
+        '--badge-color': borderColor,
+      }) as CSSProperties,
+    [borderColor],
+  )
+
+  const handleDownloadPng = async () => {
+    const exportNode = qrExportRef.current
+    if (!exportNode) {
+      return
+    }
+
+    setIsExporting(true)
+    try {
+      if ('fonts' in document) {
+        await document.fonts.ready
+      }
+
+      const exportCanvas = await html2canvas(exportNode, {
+        backgroundColor: null,
+        logging: false,
+        scale: Math.max(window.devicePixelRatio, 3),
+      })
+
+      const downloadLink = document.createElement('a')
+      const fileName = `${label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'qr-code'}.png`
+
+      downloadLink.download = fileName
+      downloadLink.href = exportCanvas.toDataURL('image/png')
+      downloadLink.click()
+    } finally {
+      setIsExporting(false)
+    }
+  }
 
   return (
     <main className="app-shell">
@@ -61,25 +101,50 @@ function App() {
           value={labelInput}
           onChange={(event) => setLabelInput(event.target.value)}
         />
+        <label className="field-label" htmlFor="border-color-input">
+          Border Color
+        </label>
+        <div className="color-picker-row">
+          <input
+            id="border-color-input"
+            className="color-picker"
+            type="color"
+            value={borderColor}
+            onChange={(event) => setBorderColor(event.target.value)}
+            aria-label="Choose border color"
+          />
+          <span className="color-value">{borderColor.toUpperCase()}</span>
+        </div>
+
+        <button
+          type="button"
+          className="download-button"
+          onClick={handleDownloadPng}
+          disabled={isExporting}
+        >
+          {isExporting ? 'Exporting...' : 'Download PNG'}
+        </button>
       </section>
 
       <section className="preview-panel" aria-live="polite">
-        <div className="qr-wrapper">
-          <div className="qr-frame" role="img" aria-label={`QR code for ${qrValue}`}>
-            <div className="qr-paper">
-              <QRCodeCanvas
-                value={qrValue}
-                size={520}
-                level="M"
-                includeMargin={false}
-                bgColor="transparent"
-                className="qr-canvas"
-              />
+        <div className="qr-export-target" ref={qrExportRef} style={previewStyle}>
+          <div className="qr-wrapper">
+            <div className="qr-frame" role="img" aria-label={`QR code for ${qrValue}`}>
+              <div className="qr-paper">
+                <QRCodeCanvas
+                  value={qrValue}
+                  size={520}
+                  level="M"
+                  includeMargin={false}
+                  bgColor="transparent"
+                  className="qr-canvas"
+                />
+              </div>
             </div>
-          </div>
-          <div className="qr-connector" />
-          <div className="caption-plate">
-            <p>{label}</p>
+            <div className="qr-connector" />
+            <div className="caption-plate">
+              <p>{label}</p>
+            </div>
           </div>
         </div>
       </section>
